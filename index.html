@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kay Lab AI Chatbot</title>
+  <meta name="description" content="Kay Lab의 프리미엄 AI 챗봇 웹 애플리케이션입니다. 다양한 Gemini 모델을 지원하며 로그인 없이 간편하게 이용할 수 있습니다.">
+  
+  <!-- FontAwesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- PDF.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <img src="kay_lab_logo_transparent.png" alt="Kay Lab Logo" class="logo" id="logo-img">
+          <span class="brand-name">Kay Lab AI</span>
+        </div>
+        <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="사이드바 닫기">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <button class="new-chat-btn" id="new-chat-btn">
+        <i class="fa-solid fa-plus"></i>
+        <span>새로운 채팅</span>
+      </button>
+      
+      <div class="chat-history-container">
+        <div class="history-label">최근 대화 기록</div>
+        <div class="chat-list" id="chat-list">
+          <!-- Dynamically populated from JS -->
+        </div>
+      </div>
+      
+      <div class="sidebar-footer">
+        <button class="sidebar-action-btn" id="settings-btn" title="설정">
+          <i class="fa-solid fa-gear"></i>
+          <span>설정</span>
+        </button>
+        <button class="sidebar-action-btn" id="theme-btn" title="테마 변경">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+          <span id="theme-text">다크 모드</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Chat Window -->
+    <main class="chat-window">
+      <header class="chat-header">
+        <div class="header-left">
+          <button class="menu-toggle-btn" id="menu-toggle-btn" aria-label="메뉴 열기">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="chat-title-container">
+            <h2 id="chat-title" contenteditable="true" title="클릭해서 대화 제목 변경">새 채팅</h2>
+            <i class="fa-solid fa-pen edit-indicator"></i>
+          </div>
+        </div>
+        <div class="header-actions">
+          <span class="model-badge" id="header-model-badge">
+            <i class="fa-solid fa-robot"></i> <span id="header-model-name">Gemini 3.5 Flash</span>
+          </span>
+          <button class="header-btn" id="pdf-summary-btn" title="PDF 문서 요약 보고서 작성" style="display: none;">
+            <i class="fa-solid fa-file-invoice"></i>
+            <span>PDF 요약</span>
+          </button>
+          <button class="header-btn" id="chat-summary-btn" title="대화 내용 요약 보고서 작성" style="display: none;">
+            <i class="fa-solid fa-receipt"></i>
+            <span>대화 요약</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Messages Area -->
+      <div class="chat-messages" id="chat-messages">
+        <!-- Welcoming / Empty State -->
+        <div class="empty-state" id="empty-state">
+          <div class="welcome-box">
+            <h1>안녕하세요! Kay Lab AI입니다.</h1>
+            <p>로그인 없이 바로 대화를 나누어 보세요. 궁금한 점을 물어보고 스마트한 AI의 답변을 확인해 보세요.</p>
+          </div>
+          
+          <div class="quick-prompts-grid">
+            <div class="prompt-card" data-prompt="새로운 사이드 프로젝트를 위한 유니크한 아이디어 3가지 추천해줘.">
+              <div class="card-icon color-1"><i class="fa-solid fa-lightbulb"></i></div>
+              <h3>아이디어 추천</h3>
+              <p>"새로운 사이드 프로젝트를 위한 아이디어 추천해줘"</p>
+            </div>
+            <div class="prompt-card" data-prompt="JavaScript에서 클로저(Closure)가 무엇인지 실무 예제와 함께 자세히 설명해줘.">
+              <div class="card-icon color-2"><i class="fa-solid fa-code"></i></div>
+              <h3>코딩 도우미</h3>
+              <p>"JS에서 클로저(Closure) 개념 예제와 함께 설명해줘"</p>
+            </div>
+            <div class="prompt-card" data-prompt="친근하지만 정중한 톤앤매너로, 한국어 파트너사 협업 제안 이메일을 작성해줘.">
+              <div class="card-icon color-3"><i class="fa-solid fa-pen-nib"></i></div>
+              <h3>비즈니스 작문</h3>
+              <p>"친근하고 정중한 비즈니스 협업 제안 이메일 써줘"</p>
+            </div>
+            <div class="prompt-card" data-prompt="인공지능이 자아를 가질 수 있을까? 기술적, 윤리적, 철학적 관점에서 흥미롭게 풀어줘.">
+              <div class="card-icon color-4"><i class="fa-solid fa-brain"></i></div>
+              <h3>철학적 탐구</h3>
+              <p>"인공지능이 정말 자아를 가질 수 있을까?"</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Chat bubbles will go here -->
+      </div>
+
+      <!-- Input Area -->
+      <div class="chat-input-wrapper">
+        <!-- PDF Attachment Indicator -->
+        <div class="pdf-badge-container" id="pdf-badge-container" style="display: none;">
+          <div class="pdf-badge">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span id="pdf-badge-name">document.pdf</span>
+            <button id="pdf-detach-btn" title="파일 해제"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+
+        <div class="chat-input-container">
+          <button class="attach-btn" id="attach-btn" title="PDF 파일 업로드">
+            <i class="fa-solid fa-paperclip"></i>
+          </button>
+          <input type="file" id="pdf-input" accept="application/pdf" style="display:none">
+          <button class="mic-btn" id="mic-btn" title="음성 인식 시작">
+            <i class="fa-solid fa-microphone"></i>
+          </button>
+          <button class="search-btn" id="search-btn" title="실시간 구글 검색 그라운딩 활성화">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+          <textarea id="chat-input" placeholder="Kay Lab AI에게 메시지를 입력하세요... (Shift+Enter로 줄바꿈)" rows="1"></textarea>
+          <button class="send-btn" id="send-btn" aria-label="메시지 전송">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+        <div class="input-info">
+          <span id="api-status-indicator" class="api-status-disconnected">
+            <i class="fa-solid fa-circle"></i> <span id="api-status-text">시뮬레이터 모드</span>
+          </span>
+          <span class="divider">|</span>
+          <span id="active-settings-summary">Gemini 3.5 Flash | 일반 어시스턴트</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Overlay & Settings Modal -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+    <div class="settings-modal" id="settings-modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-gear"></i> Kay Lab AI 설정</h3>
+        <button class="modal-close-btn" id="modal-close-btn" aria-label="설정 닫기">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- API Key section -->
+        <div class="settings-group">
+          <label for="api-key-input">
+            Gemini API Key
+            <span class="label-hint">API 키가 등록되면 실제 Google Gemini 서버와 통신합니다.</span>
+          </label>
+          <div class="input-with-button">
+            <input type="password" id="api-key-input" placeholder="AI Studio에서 발급한 API 키를 입력하세요 (AIZA...)">
+            <button class="visibility-toggle" id="api-key-toggle" aria-label="API 키 보이기/숨기기">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+          <div class="api-links">
+            <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Google AI Studio에서 무료 API Key 발급받기
+            </a>
+          </div>
+        </div>
+
+        <!-- Model select section -->
+        <div class="settings-group">
+          <label for="model-select">AI 모델 선택</label>
+          <div class="select-wrapper">
+            <select id="model-select">
+              <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+              <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+              <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+              <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Simulator Persona section -->
+        <div class="settings-group">
+          <label for="persona-select">
+            AI 페르소나 설정
+            <span class="label-hint">시뮬레이션 모드 또는 API의 System Instruction에 반영됩니다.</span>
+          </label>
+          <div class="select-wrapper">
+            <select id="persona-select">
+              <option value="general">일반 AI 어시스턴트 (친절하고 다재다능한 AI)</option>
+              <option value="developer">숙련된 소프트웨어 엔지니어 (간결하고 동작 가능한 코드 중심)</option>
+              <option value="writer">창의적인 카피라이터 (매력적이고 풍부한 글쓰기)</option>
+              <option value="philosopher">깊이 있는 철학자 (다각적 고찰과 진중한 톤앤매너)</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Audio settings section -->
+        <div class="settings-group">
+          <label>음성 기능 설정</label>
+          <div class="checkbox-wrapper">
+            <label class="switch">
+              <input type="checkbox" id="auto-read-checkbox">
+              <span class="slider round"></span>
+            </label>
+            <span class="checkbox-label-text">AI 답변 자동 음성 출력 (TTS) 활성화</span>
+          </div>
+        </div>
+        
+        <!-- Danger/Action section -->
+        <div class="settings-group danger-zone">
+          <label>데이터 관리</label>
+          <button class="danger-btn" id="clear-all-btn">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>모든 대화 기록 초기화</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="save-btn" id="save-settings-btn">설정 저장</button>
+      </div>
+    </div>
+
+    <!-- Summary Report Modal -->
+    <div class="modal-overlay" id="report-modal-overlay"></div>
+    <div class="report-modal" id="report-modal">
+      <div class="report-modal-header">
+        <h3 id="report-modal-title"><i class="fa-solid fa-file-contract"></i> 요약 보고서</h3>
+        <div class="report-header-actions">
+          <button class="report-action-btn" id="print-report-btn" title="보고서 인쇄">
+            <i class="fa-solid fa-print"></i> 인쇄하기
+          </button>
+          <button class="report-close-btn" id="report-close-btn" aria-label="닫기">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <div class="report-modal-body" id="report-modal-body">
+        <!-- Generated report content goes here -->
+      </div>
+    </div>
+
+    <!-- Drag and Drop Overlay -->
+    <div class="drag-drop-overlay" id="drag-drop-overlay">
+      <div class="drag-drop-content">
+        <i class="fa-solid fa-file-arrow-up"></i>
+        <p>PDF 파일을 여기에 드롭하여 분석을 시작하세요</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
