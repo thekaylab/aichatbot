@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kay Lab AI Chatbot</title>
-  <meta name="description" content="Kay Lab의 프리미엄 AI 챗봇 웹 애플리케이션입니다. 다양한 Gemini 모델을 지원하며 로그인 없이 간편하게 이용할 수 있습니다.">
+  <title>Aiden AI Chatbot</title>
+  <meta name="description" content="Aiden의 프리미엄 AI 챗봇 웹 애플리케이션입니다. 가장 스마트한 당신의 AI 메이트, 다양한 Gemini 모델을 지원하며 로그인 없이 간편하게 이용할 수 있습니다.">
   
   <!-- FontAwesome & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,8 +25,8 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="brand">
-          <img src="kay_lab_logo_transparent.png" alt="Kay Lab Logo" class="logo" id="logo-img">
-          <span class="brand-name">Kay Lab AI</span>
+          <img src="kay_lab_logo_transparent.png" alt="Aiden Logo" class="logo" id="logo-img">
+          <span class="brand-name">Aiden</span>
         </div>
         <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="사이드바 닫기">
           <i class="fa-solid fa-xmark"></i>
@@ -70,9 +70,19 @@
           </div>
         </div>
         <div class="header-actions">
-          <span class="model-badge" id="header-model-badge">
-            <i class="fa-solid fa-robot"></i> <span id="header-model-name">Gemini 3.5 Flash</span>
-          </span>
+          <button class="header-btn-new-chat" id="header-new-chat-btn" title="새로운 채팅 시작">
+            <i class="fa-solid fa-plus"></i>
+            <span>새 채팅</span>
+          </button>
+          <div class="header-model-dropdown-container">
+            <button class="model-badge-btn" id="header-model-badge-btn" title="AI 모델 변경">
+              <i class="fa-solid fa-robot"></i> <span id="header-model-name">Gemini 3.5 Flash</span>
+              <i class="fa-solid fa-chevron-down select-arrow-mini"></i>
+            </button>
+            <div class="header-model-dropdown" id="header-model-dropdown">
+              <!-- Dynamically populated from JS -->
+            </div>
+          </div>
           <button class="header-btn" id="pdf-summary-btn" title="PDF 문서 요약 보고서 작성" style="display: none;">
             <i class="fa-solid fa-file-invoice"></i>
             <span>PDF 요약</span>
@@ -89,29 +99,38 @@
         <!-- Welcoming / Empty State -->
         <div class="empty-state" id="empty-state">
           <div class="welcome-box">
-            <h1>안녕하세요! Kay Lab AI입니다.</h1>
-            <p>로그인 없이 바로 대화를 나누어 보세요. 궁금한 점을 물어보고 스마트한 AI의 답변을 확인해 보세요.</p>
+            <h1>Aiden</h1>
+            <p class="welcome-slogan" style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 500; color: var(--accent-light); margin-top: -8px; margin-bottom: 8px; letter-spacing: -0.01em;">가장 스마트한 당신의 AI 메이트</p>
+            <p>로그인 없이 바로 대화를 나누어 보세요.<br>궁금한 점을 물어보고 스마트한 AI의 답변을 확인해 보세요.</p>
           </div>
           
           <div class="quick-prompts-grid">
             <div class="prompt-card" data-prompt="새로운 사이드 프로젝트를 위한 유니크한 아이디어 3가지 추천해줘.">
-              <div class="card-icon color-1"><i class="fa-solid fa-lightbulb"></i></div>
-              <h3>아이디어 추천</h3>
+              <div class="prompt-card-header">
+                <div class="card-icon color-1"><i class="fa-solid fa-lightbulb"></i></div>
+                <h3>아이디어 추천</h3>
+              </div>
               <p>"새로운 사이드 프로젝트를 위한 아이디어 추천해줘"</p>
             </div>
             <div class="prompt-card" data-prompt="JavaScript에서 클로저(Closure)가 무엇인지 실무 예제와 함께 자세히 설명해줘.">
-              <div class="card-icon color-2"><i class="fa-solid fa-code"></i></div>
-              <h3>코딩 도우미</h3>
+              <div class="prompt-card-header">
+                <div class="card-icon color-2"><i class="fa-solid fa-code"></i></div>
+                <h3>코딩 도우미</h3>
+              </div>
               <p>"JS에서 클로저(Closure) 개념 예제와 함께 설명해줘"</p>
             </div>
             <div class="prompt-card" data-prompt="친근하지만 정중한 톤앤매너로, 한국어 파트너사 협업 제안 이메일을 작성해줘.">
-              <div class="card-icon color-3"><i class="fa-solid fa-pen-nib"></i></div>
-              <h3>비즈니스 작문</h3>
+              <div class="prompt-card-header">
+                <div class="card-icon color-3"><i class="fa-solid fa-pen-nib"></i></div>
+                <h3>비즈니스 작문</h3>
+              </div>
               <p>"친근하고 정중한 비즈니스 협업 제안 이메일 써줘"</p>
             </div>
             <div class="prompt-card" data-prompt="인공지능이 자아를 가질 수 있을까? 기술적, 윤리적, 철학적 관점에서 흥미롭게 풀어줘.">
-              <div class="card-icon color-4"><i class="fa-solid fa-brain"></i></div>
-              <h3>철학적 탐구</h3>
+              <div class="prompt-card-header">
+                <div class="card-icon color-4"><i class="fa-solid fa-brain"></i></div>
+                <h3>철학적 탐구</h3>
+              </div>
               <p>"인공지능이 정말 자아를 가질 수 있을까?"</p>
             </div>
           </div>
@@ -142,7 +161,7 @@
           <button class="search-btn" id="search-btn" title="실시간 구글 검색 그라운딩 활성화">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
-          <textarea id="chat-input" placeholder="Kay Lab AI에게 메시지를 입력하세요... (Shift+Enter로 줄바꿈)" rows="1"></textarea>
+          <textarea id="chat-input" placeholder="Aiden에게 메시지를 입력하세요... (Shift+Enter로 줄바꿈)" rows="1"></textarea>
           <button class="send-btn" id="send-btn" aria-label="메시지 전송">
             <i class="fa-solid fa-paper-plane"></i>
           </button>
@@ -161,7 +180,7 @@
     <div class="modal-overlay" id="modal-overlay"></div>
     <div class="settings-modal" id="settings-modal">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-gear"></i> Kay Lab AI 설정</h3>
+        <h3><i class="fa-solid fa-gear"></i> Aiden 설정</h3>
         <button class="modal-close-btn" id="modal-close-btn" aria-label="설정 닫기">
           <i class="fa-solid fa-xmark"></i>
         </button>

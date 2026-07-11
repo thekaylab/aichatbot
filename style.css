@@ -161,15 +161,15 @@ body {
 }
 
 .brand .logo {
-  height: 38px;
+  height: 48px;
   width: auto;
   object-fit: contain;
 }
 
 .brand-name {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.15rem;
+  font-weight: 800;
+  font-size: 1.35rem;
   letter-spacing: -0.02em;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
@@ -492,15 +492,15 @@ body {
 
 /* Empty State / Welcome Screen */
 .empty-state {
-  max-width: 800px;
+  max-width: 720px;
   margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 40px;
-  padding: 40px 10px;
+  gap: 20px;
+  padding: 15px 10px;
   animation: fadeIn var(--transition-slow);
 }
 
@@ -508,22 +508,23 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
 }
 
 .welcome-logo {
-  height: 64px;
+  height: 48px;
   width: auto;
   object-fit: contain;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   filter: drop-shadow(0 4px 10px var(--shadow-color));
 }
 
 .empty-state h1 {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  margin: 0;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -531,30 +532,31 @@ body {
 
 .empty-state p {
   color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  line-height: 1.5;
   max-width: 540px;
+  margin: 0;
 }
 
 .quick-prompts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .prompt-card {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
   text-align: left;
   cursor: pointer;
   transition: all var(--transition-normal);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .prompt-card:hover {
@@ -564,14 +566,21 @@ body {
   background-color: var(--bg-tertiary);
 }
 
+.prompt-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .card-icon {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 .color-1 { background-color: rgba(245, 158, 11, 0.12); color: #f59e0b; }
@@ -581,15 +590,16 @@ body {
 
 .prompt-card h3 {
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-primary);
+  margin: 0;
 }
 
 .prompt-card p {
   color: var(--text-secondary);
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.78rem;
+  line-height: 1.35;
   margin: 0;
 }
 
@@ -1767,6 +1777,118 @@ input:checked + .slider:before {
   text-align: left;
 }
 
+/* Header New Chat Button */
+.header-btn-new-chat {
+  background: var(--accent-gradient);
+  border: none;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px var(--accent-glow);
+  flex-shrink: 0;
+}
+
+.header-btn-new-chat:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.header-btn-new-chat:active {
+  transform: translateY(1px);
+}
+
+/* Header Model Dropdown Button */
+.model-badge-btn {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.model-badge-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.select-arrow-mini {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.model-badge-btn:hover .select-arrow-mini {
+  color: var(--text-secondary);
+}
+
+/* Dropdown Container & Options */
+.header-model-dropdown-container {
+  position: relative;
+}
+
+.header-model-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: var(--modal-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  width: 190px;
+  padding: 6px;
+  z-index: 150;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  backdrop-filter: blur(10px);
+}
+
+.header-model-dropdown.active {
+  display: flex;
+}
+
+.header-model-dropdown-option {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  border: none;
+  background: transparent;
+  width: 100%;
+}
+
+.header-model-dropdown-option:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.header-model-dropdown-option.active {
+  background-color: var(--bg-tertiary);
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
 /* Print CSS Settings */
 @media print {
   /* 1. 바디 바로 아래 모든 직계 자식 요소를 기본적으로 숨김 */
@@ -1869,9 +1991,28 @@ input:checked + .slider:before {
   }
 
   .message-bubble {
-    padding: 10px 14px;
-    font-size: 0.9rem;
+    padding: 12px 16px;
+    font-size: 1.02rem;
+    line-height: 1.75;
   }
+
+  .message-bubble p {
+    margin-bottom: 14px;
+  }
+
+  .message-bubble ul, .message-bubble ol {
+    margin-bottom: 14px;
+    margin-left: 18px;
+  }
+
+  .message-bubble li {
+    margin-bottom: 8px;
+  }
+
+  .message-bubble h1 { font-size: 1.35rem; }
+  .message-bubble h2 { font-size: 1.22rem; }
+  .message-bubble h3 { font-size: 1.12rem; }
+  .message-bubble h4 { font-size: 1.05rem; }
 
   .avatar {
     width: 32px;
@@ -1888,11 +2029,12 @@ input:checked + .slider:before {
   }
 
   .chat-input-container textarea {
-    font-size: 0.9rem;
+    font-size: 1rem !important; /* iOS 포커스 줌 발생을 방지하기 위한 최소 16px 고정 */
+    line-height: 1.4;
   }
 
   .send-btn {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
   }
 }
