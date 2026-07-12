@@ -1991,28 +1991,40 @@ input:checked + .slider:before {
   }
 
   .message-bubble {
-    padding: 12px 16px;
-    font-size: 1.02rem;
-    line-height: 1.75;
+    padding: 14px 18px;
+    font-size: 1.12rem; /* 18px 상당으로 가독성 대폭 상향 */
+    line-height: 1.8;
   }
 
   .message-bubble p {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 
   .message-bubble ul, .message-bubble ol {
-    margin-bottom: 14px;
-    margin-left: 18px;
+    margin-bottom: 16px;
+    margin-left: 20px;
   }
 
   .message-bubble li {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
-  .message-bubble h1 { font-size: 1.35rem; }
-  .message-bubble h2 { font-size: 1.22rem; }
-  .message-bubble h3 { font-size: 1.12rem; }
-  .message-bubble h4 { font-size: 1.05rem; }
+  .message-bubble h1 { font-size: 1.5rem; }
+  .message-bubble h2 { font-size: 1.38rem; }
+  .message-bubble h3 { font-size: 1.26rem; }
+  .message-bubble h4 { font-size: 1.16rem; }
+
+  .message-bubble pre code {
+    font-size: 0.95rem; /* 모바일에서 코드 블록 폰트 가독성 증대 */
+  }
+
+  .message-bubble table {
+    font-size: 0.95rem; /* 모바일에서 표 텍스트 가독성 증대 */
+  }
+
+  .message-sender {
+    font-size: 0.8rem; /* 작성자명 크기도 조화롭게 확대 */
+  }
 
   .avatar {
     width: 32px;
