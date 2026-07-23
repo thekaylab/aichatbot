@@ -1777,6 +1777,73 @@ input:checked + .slider:before {
   text-align: left;
 }
 
+/* Search Grounding Metadata Footer inside bubble */
+.search-grounding-metadata {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.search-queries {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--accent-light);
+}
+
+.search-queries span {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+}
+
+.search-sources-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.search-sources-list {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.search-sources-list li {
+  margin-bottom: 4px !important;
+  padding-left: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+.search-sources-list li::before {
+  content: "•";
+  color: var(--accent-color);
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: 4px;
+}
+
+.search-sources-list a {
+  color: var(--accent-light);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.search-sources-list a:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
 /* Header New Chat Button */
 .header-btn-new-chat {
   background: var(--accent-gradient);

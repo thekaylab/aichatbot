@@ -1,3 +1,8 @@
+// PDF.js Global Worker configuration
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+}
+
 // State Management
 let chats = [];
 let currentChatId = null;
@@ -595,7 +600,7 @@ function renderChatMessages() {
   chatMessages.innerHTML = '';
   
   activeChat.messages.forEach(msg => {
-    appendMessageHTML(msg.role, msg.content);
+    appendMessageHTML(msg.role, msg.content, msg.groundingMetadata);
   });
   
   scrollToBottom();
@@ -603,7 +608,7 @@ function renderChatMessages() {
 }
 
 // Append a single message block in the DOM
-function appendMessageHTML(role, content) {
+function appendMessageHTML(role, content, groundingMetadata) {
   const messageRow = document.createElement('div');
   messageRow.className = `message-row ${role}`;
   
@@ -619,7 +624,32 @@ function appendMessageHTML(role, content) {
   }
   
   // Format content (Markdown-like rendering)
-  const renderedContent = isUser ? escapeHTML(content).replace(/\n/g, '<br>') : parseMarkdown(content);
+  let renderedContent = isUser ? escapeHTML(content).replace(/\n/g, '<br>') : parseMarkdown(content);
+  
+  // 구글 검색 그라운딩 출처 링크 렌더링
+  if (groundingMetadata && (groundingMetadata.webSearchQueries || groundingMetadata.groundingChunks)) {
+    const { webSearchQueries, groundingChunks } = groundingMetadata;
+    let metadataHTML = `<div class="search-grounding-metadata">`;
+    if (webSearchQueries && webSearchQueries.length > 0) {
+      metadataHTML += `<div class="search-queries"><i class="fa-solid fa-magnifying-glass"></i> 검색어: ${webSearchQueries.map(q => `<span>${escapeHTML(q)}</span>`).join(', ')}</div>`;
+    }
+    if (groundingChunks && groundingChunks.length > 0) {
+      metadataHTML += `<div class="search-sources-title"><i class="fa-solid fa-link"></i> 참고 출처:</div>`;
+      metadataHTML += `<ul class="search-sources-list">`;
+      const uniqueSources = {};
+      groundingChunks.forEach(chunk => {
+        if (chunk.web && chunk.web.uri) {
+          uniqueSources[chunk.web.uri] = chunk.web.title || chunk.web.uri;
+        }
+      });
+      Object.keys(uniqueSources).forEach(uri => {
+        metadataHTML += `<li><a href="${uri}" target="_blank" rel="noopener noreferrer">${escapeHTML(uniqueSources[uri])}</a></li>`;
+      });
+      metadataHTML += `</ul>`;
+    }
+    metadataHTML += `</div>`;
+    renderedContent += metadataHTML;
+  }
   
   messageRow.innerHTML = `
     <div class="avatar">${avatarHTML}</div>
@@ -828,8 +858,18 @@ ${systemInstructionText}`;
         googleSearch: {}
       }
     ];
+    
+    // 실시간 검색 할루시네이션 및 가짜 URL/플레이스홀더 생성 방지 지시사항 주입
+    const searchGroundingInstruction = `\n\n[실시간 구글 검색 지침]\n1. 검색 결과를 바탕으로 답변의 사실관계를 정확하게 작성하십시오.\n2. 답변 본문 내에 임의의 가짜 마크다운 URL 링크(예: [제목](https://...))나 "(실제 관련 뉴스 링크를 여기에 추가해야 합니다)"와 같은 메타 지시문/플레이스홀더를 절대로 꾸며내어 작성하지 마십시오.\n3. 원본 출처 웹사이트 링크는 시스템이 자동으로 답변 하단 카드에 렌더링하므로, 본문에는 팩트 텍스트 내용만을 명확하고 정갈하게 작성하십시오.`;
+    systemInstructionText += searchGroundingInstruction;
   }
   
+  // 오늘 날짜 보정 지시사항 동적 추가 (2024년 등 과거 날짜 인식 방지)
+  const today = new Date();
+  const formattedToday = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+  const dateInstruction = `\n\n[현재 시간 정보]\n오늘 날짜(현재 시간)는 ${formattedToday}입니다. 답변 시 오늘이 2024년 혹은 과거의 날짜라고 착각하지 마시고, 현재 연도(2026년) 기준의 시제를 올바르게 유지하여 답변하십시오.`;
+  systemInstructionText += dateInstruction;
+
   if (systemInstructionText) {
     requestBody.systemInstruction = {
       parts: [{ text: systemInstructionText }]
@@ -875,6 +915,9 @@ ${systemInstructionText}`;
   let bubble = null;
   const senderName = personas[settings.persona]?.name || 'AI';
   
+  let webSearchQueries = null;
+  let groundingChunks = null;
+  
   // 스트림 청크 수신 루프
   while (true) {
     const { value, done } = await reader.read();
@@ -890,7 +933,19 @@ ${systemInstructionText}`;
         const jsonStr = cleanLine.substring(6);
         try {
           const chunkData = JSON.parse(jsonStr);
-          const textChunk = chunkData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          
+          // 구글 검색 그라운딩 메타데이터 수집
+          const candidate = chunkData.candidates?.[0];
+          if (candidate?.groundingMetadata) {
+            if (candidate.groundingMetadata.webSearchQueries) {
+              webSearchQueries = candidate.groundingMetadata.webSearchQueries;
+            }
+            if (candidate.groundingMetadata.groundingChunks) {
+              groundingChunks = candidate.groundingMetadata.groundingChunks;
+            }
+          }
+          
+          const textChunk = candidate?.content?.parts?.[0]?.text || "";
           
           if (textChunk) {
             fullText += textChunk;
@@ -933,12 +988,42 @@ ${systemInstructionText}`;
     throw new Error("API로부터 응답 데이터를 받지 못했습니다.");
   }
   
-  // 대화 기록에 저장
+  // 실시간 구글 검색 그라운딩 출처 정보가 있을 경우 말풍선 UI에 즉시 추가 렌더링
+  if (isSearchGroundingActive && (webSearchQueries || groundingChunks)) {
+    let metadataHTML = `<div class="search-grounding-metadata">`;
+    if (webSearchQueries && webSearchQueries.length > 0) {
+      metadataHTML += `<div class="search-queries"><i class="fa-solid fa-magnifying-glass"></i> 검색어: ${webSearchQueries.map(q => `<span>${escapeHTML(q)}</span>`).join(', ')}</div>`;
+    }
+    if (groundingChunks && groundingChunks.length > 0) {
+      metadataHTML += `<div class="search-sources-title"><i class="fa-solid fa-link"></i> 참고 출처:</div>`;
+      metadataHTML += `<ul class="search-sources-list">`;
+      const uniqueSources = {};
+      groundingChunks.forEach(chunk => {
+        if (chunk.web && chunk.web.uri) {
+          uniqueSources[chunk.web.uri] = chunk.web.title || chunk.web.uri;
+        }
+      });
+      Object.keys(uniqueSources).forEach(uri => {
+        metadataHTML += `<li><a href="${uri}" target="_blank" rel="noopener noreferrer">${escapeHTML(uniqueSources[uri])}</a></li>`;
+      });
+      metadataHTML += `</ul>`;
+    }
+    metadataHTML += `</div>`;
+    bubble.innerHTML += metadataHTML;
+  }
+  
+  // 대화 기록에 저장 (검색 메타데이터 포함)
   const aiMsg = {
     role: 'model',
     content: fullText,
     timestamp: Date.now()
   };
+  if (webSearchQueries || groundingChunks) {
+    aiMsg.groundingMetadata = {
+      webSearchQueries,
+      groundingChunks
+    };
+  }
   activeChat.messages.push(aiMsg);
   saveChatsToStorage();
   renderChatList();
@@ -1860,9 +1945,14 @@ async function streamSummaryReport(systemInstruction, userPrompt, titleText) {
       const modelEndpoint = settings.model;
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelEndpoint}:streamGenerateContent?alt=sse&key=${settings.apiKey}`;
       
+      // 오늘 날짜 보정 지시사항 동적 추가 (2024년 등 과거 날짜 인식 방지)
+      const today = new Date();
+      const formattedToday = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+      const dateCorrection = `\n\n[현재 시간 정보]\n오늘 날짜(현재 시간)는 ${formattedToday}입니다. 작성일이나 대화 일자 등 시간 관련 사항을 기입해야 할 경우, 현재 연도(2026년) 기준의 시제를 올바르게 유지하여 보고서를 작성하십시오.`;
+
       const requestBody = {
         contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        systemInstruction: { parts: [{ text: systemInstruction }] }
+        systemInstruction: { parts: [{ text: systemInstruction + dateCorrection }] }
       };
       
       const response = await fetch(url, {
